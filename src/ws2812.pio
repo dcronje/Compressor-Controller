@@ -1,0 +1,19 @@
+.program ws2812
+
+.side_set 1 opt
+
+; WS2812 timing values for each part of the signal (assuming system clock of 125MHz)
+; 0 code: high for 400ns (5 cycles at 125MHz), low for 850ns (11 cycles)
+; 1 code: high for 800ns (10 cycles), low for 450ns (6 cycles)
+
+bitloop:
+  out x, 1          side 0 [4]   ; Output the least significant bit, hold low for 1 cycle less (5-1 cycles)
+  jmp !x do_zero    side 1 [5]   ; If bit is 0, jump to do_zero (else continue for 1 high, total 10 cycles)
+do_one:
+  nop               side 0 [5]   ; Extend low period for 1 code (total 6 cycles low)
+  jmp bitloop
+
+do_zero:
+  nop               side 0 [6]   ; First part of extending low period for 0 code
+  nop               side 0 [3]   ; Second part to complete the low period (total 10 cycles low)
+  jmp bitloop

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Setup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .wifi-list-container {
+            max-height: 300px;
+            /* Set maximum height for scrollability */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .wifi-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .wifi-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .wifi-item:last-child {
+            border-bottom: none;
+        }
+
+        .wifi-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wifi-name {
+            font-weight: bold;
+        }
+
+        .wifi-auth {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .wifi-signal {
+            font-size: 1.2em;
+        }
+
+        .password-input {
+            margin-top: 20px;
+            display: none;
+            /* Initially hidden */
+        }
+
+        .password-input label {
+            font-weight: bold;
+        }
+
+        .password-input input {
+            width: calc(100% - 20px);
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .password-input button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .password-input button:hover {
+            background-color: #0056b3;
+        }
+
+        #status {
+            margin-top: 20px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Wi-Fi Setup</h1>
+    <div class="wifi-list-container" id="wifiList"></div>
+    <div id="passwordInput" class="password-input">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+        <button onclick="submitCredentials(event)">Connect</button>
+    </div>
+    <p id="selectedNetwork"></p>
+    <p id="status"></p>
+    <script>
+        let selectedNetwork = null
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadWifiList()
+        })
+
+        async function loadWifiList() {
+            document.getElementById('status').innerText = "Scanning for Wi-Fi networks..."
+            const response = await fetch('/scan.json')
+            if (response.ok) {
+                const wifiList = await response.json()
+                const listContainer = document.getElementById('wifiList')
+                listContainer.innerHTML = "" // Clear existing list
+
+                wifiList.forEach(network => {
+                    const item = document.createElement('div')
+                    item.className = 'wifi-item'
+                    item.onclick = () => selectNetwork(network)
+
+                    const info = document.createElement('div')
+                    info.className = 'wifi-info'
+                    info.innerHTML = `
+                            <div class="wifi-name">${network.ssid}</div>
+                            <div class="wifi-auth">${getAuthModeText(network.auth_mode)}</div>
+                        `
+
+                    const signal = document.createElement('div')
+                    signal.className = 'wifi-signal'
+                    signal.innerHTML = getSignalStrengthIcon(network.rssi)
+
+                    item.appendChild(info)
+                    item.appendChild(signal)
+                    listContainer.appendChild(item)
+                })
+
+                document.getElementById('status').innerText = "Select a Wi-Fi network from the list."
+            } else {
+                document.getElementById('status').innerText = "Failed to scan for Wi-Fi networks."
+            }
+        }
+
+        function getAuthModeText(authMode) {
+            const modes = {
+                0: "Open",
+                1: "WEP",
+                2: "WPA",
+                3: "WPA2",
+                4: "WPA/WPA2 Mixed",
+                5: "WPA2-Enterprise"
+            }
+            return modes[authMode] || "Unknown"
+        }
+
+        function getSignalStrengthIcon(rssi) {
+            if (rssi >= -50) return "🔵" // Strong
+            if (rssi >= -70) return "🟢" // Moderate
+            return "⚫" // Weak
+        }
+
+        function selectNetwork(network) {
+            selectedNetwork = network
+            document.getElementById('selectedNetwork').innerText = `Selected: ${network.ssid}`
+            document.getElementById('passwordInput').style.display = "block"
+        }
+
+        async function submitCredentials(event) {
+            event.preventDefault()
+            if (!selectedNetwork) {
+                document.getElementById('status').innerText = "Please select a network."
+                return
+            }
+            const password = document.getElementById('password').value
+
+            document.getElementById('status').innerText = "Testing Wi-Fi credentials, the led on you device should start flashing, if it turns solid you have successfully connected and you can close this page, if it turns off please make sure you are connected to the correct Wi-Fi and reload the page."
+
+            const response = await fetch('/configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ssid: selectedNetwork.ssid, password, authMode: selectedNetwork.authMode })
+            })
+
+            if (!response.ok) {
+                document.getElementById('status').innerText = "Failed to submit credentials."
+            }
+        }
+    </script>
+</body>
+
+</html>
