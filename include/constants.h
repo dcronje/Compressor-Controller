@@ -18,15 +18,17 @@ const int PRESSURE_SENSOR_ADC_CHANNEL = 0;
 const int CURRENT_SENSOR_GPIO = 27;
 const int CURRENT_SENSOR_ADC_CHANNEL = 1;
 
-const int RELAY_GPIO = 19;
-const int SOLENOID_GPIO = 19;
+const int RELAY_GPIO = 17;
+const int SOLENOID_GPIO = 15;
+
+const int TEMPERATURE_SENSOR_GPIO = 12;
 
 const int LED_GPIO = CYW43_WL_GPIO_LED_PIN;
 const int SOCKET_SERVER_PORT = 3000;
 
-const int SHUT_DOWN_BUTTON_GPIO = 23;
-const int FORGET_WIFI_BUTTON_GPIO = 23;
+const int SHUT_DOWN_BUTTON_GPIO = 6;
+const int FORGET_WIFI_BUTTON_GPIO = 4;
 
-const int WS2812_GPIO = 4;
+const int WS2812_GPIO = 3;
 
 #endif // CONSTANTS_H
