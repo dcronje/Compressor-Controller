@@ -22,7 +22,7 @@ typedef enum
   ON,
   OFF,
   OFF_RELEASE,
-  SET_PRESSURE_TIMEOUT,
+  SET_COMPRESSION_TIMEOUT,
   SET_RELEASE_TIMEOUT,
   SET_MOTOR_TIMEOUT,
 } CommandType;
@@ -36,10 +36,10 @@ typedef enum
   PRESSURE_CHANGE,
   MOTOR_START,
   MOTOR_STOP,
-  PRESSURE_COUNTOWN_END,
+  COMPRESSION_COUNTOWN_END,
   RELEASE_COUNTDOWN_END,
   MOTOR_COUNTDOWN_END,
-  PRESSURE_COUNTDOWN_UPDATED,
+  COMPRESSION_COUNTDOWN_UPDATED,
   RELEASE_COUNTDOWN_UPDATE,
   MOTOR_COUNTDOWN_UPDATE,
   SUPPLY_START,
@@ -70,10 +70,10 @@ void sendReleasingInfo();
 void sendSupplydInfo();
 void sendMotorStartInfo();
 void sendMotorStopInfo();
-void sendPressureCountdownUpdatedInfo(int timeout);
+void sendCompressionCountdownUpdatedInfo(int timeout);
 void sendSupplyCountdownUpdatedInfo(int timeout);
 void sendMotorCountdownUpdatedInfo(int timeout);
-void sendPressureCountdownEndInfo();
+void sendCompressionCountdownEndInfo();
 void sendSupplyCountdownEndInfo();
 void sendMotorCountdownEndInfo();
 void sendSupplyStartInfo();
@@ -89,7 +89,7 @@ std::string messageToString(const Message &msg);
 void controlTask(void *params);
 void interactionTask(void *params);
 
-void handleSetPressureTimeout(int timeout);
+void handleSetCompressionTimeout(int timeout);
 void handleSetSupplyTimeout(int timeout);
 void handleSetMotorTimeout(int timeout);
 void handleSupplyAndOff();

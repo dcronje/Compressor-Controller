@@ -16,7 +16,7 @@ typedef struct
   char ssid[32];
   char password[64];
   int authMode;
-  int pressureTimeout;
+  int compressionTimeout;
   int supplyTimeout;
   int motorTimeout;
   uint32_t magic; // Magic number for validity check

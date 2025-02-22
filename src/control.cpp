@@ -25,15 +25,15 @@ QueueHandle_t interactionQueue = NULL;
 
 TimerHandle_t longPressTimer = NULL;
 
-TimerHandle_t pressureTimer;
+TimerHandle_t compressionTimer;
 TimerHandle_t supplyTimer;
 TimerHandle_t motorTimer;
 
-TimerHandle_t pressureWatchTimer;
+TimerHandle_t compressionWatchTimer;
 TimerHandle_t supplyWatchTimer;
 TimerHandle_t motorWatchTimer;
 
-volatile static int pressureTimeElapsed = 0;
+volatile static int compressionTimeElapsed = 0;
 volatile static int supplyTimeElapsed = 0;
 volatile static int motorTimeElapsed = 0;
 
@@ -50,10 +50,10 @@ typedef enum
 
 void handleWatchTimerChange(TimerHandle_t xTimer)
 {
-  if (xTimer == pressureWatchTimer)
+  if (xTimer == compressionWatchTimer)
   {
-    pressureTimeElapsed++;
-    sendPressureCountdownUpdatedInfo(currentSettings.pressureTimeout - pressureTimeElapsed);
+    compressionTimeElapsed++;
+    sendCompressionCountdownUpdatedInfo(currentSettings.compressionTimeout - compressionTimeElapsed);
   }
   else if (xTimer == supplyWatchTimer)
   {
@@ -70,17 +70,17 @@ void handleWatchTimerChange(TimerHandle_t xTimer)
 void handleTimerReached(TimerHandle_t xTimer)
 {
 
-  if (xTimer == pressureTimer)
+  if (xTimer == compressionTimer)
   {
     printf("Timer expired\n");
-    sendPressureCountdownUpdatedInfo(0);
-    sendPressureCountdownEndInfo();
+    sendCompressionCountdownUpdatedInfo(0);
+    sendCompressionCountdownEndInfo();
     handleSupplyAndOff();
-    if (xTimerStop(pressureWatchTimer, 0) != pdPASS)
+    if (xTimerStop(compressionWatchTimer, 0) != pdPASS)
     {
       printf("Failed to stop watch timer \n");
     }
-    pressureTimeElapsed = 0;
+    compressionTimeElapsed = 0;
   }
   else if (xTimer == supplyTimer)
   {
@@ -110,18 +110,18 @@ void handleTimerReached(TimerHandle_t xTimer)
 
 void changeTimerPreiod(TimerHandle_t xTimer, TickType_t newPeriod)
 {
-  if (xTimer == pressureTimer)
+  if (xTimer == compressionTimer)
   {
-    sendPressureCountdownUpdatedInfo(newPeriod);
-    if (xTimerReset(pressureWatchTimer, 0) != pdPASS)
+    sendCompressionCountdownUpdatedInfo(newPeriod);
+    if (xTimerReset(compressionWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
     }
-    pressureTimeElapsed = 0;
+    compressionTimeElapsed = 0;
   }
   else if (xTimer == supplyTimer)
   {
-    sendPressureCountdownUpdatedInfo(newPeriod);
+    sendCompressionCountdownUpdatedInfo(newPeriod);
     if (xTimerReset(supplyWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -130,7 +130,7 @@ void changeTimerPreiod(TimerHandle_t xTimer, TickType_t newPeriod)
   }
   else if (xTimer == motorTimer)
   {
-    sendPressureCountdownUpdatedInfo(newPeriod);
+    sendCompressionCountdownUpdatedInfo(newPeriod);
     if (xTimerReset(motorWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -146,18 +146,18 @@ void changeTimerPreiod(TimerHandle_t xTimer, TickType_t newPeriod)
 
 void startTimer(TimerHandle_t xTimer)
 {
-  if (xTimer == pressureTimer)
+  if (xTimer == compressionTimer)
   {
-    sendPressureCountdownUpdatedInfo(currentSettings.pressureTimeout);
-    if (xTimerStart(pressureWatchTimer, 0) != pdPASS)
+    sendCompressionCountdownUpdatedInfo(currentSettings.compressionTimeout);
+    if (xTimerStart(compressionWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
     }
-    pressureTimeElapsed = 0;
+    compressionTimeElapsed = 0;
   }
   else if (xTimer == supplyTimer)
   {
-    sendPressureCountdownUpdatedInfo(currentSettings.supplyTimeout);
+    sendCompressionCountdownUpdatedInfo(currentSettings.supplyTimeout);
     if (xTimerStart(supplyWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -166,7 +166,7 @@ void startTimer(TimerHandle_t xTimer)
   }
   else if (xTimer == motorTimer)
   {
-    sendPressureCountdownUpdatedInfo(currentSettings.motorTimeout);
+    sendCompressionCountdownUpdatedInfo(currentSettings.motorTimeout);
     if (xTimerStart(motorWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -182,18 +182,18 @@ void startTimer(TimerHandle_t xTimer)
 
 void stopTimer(TimerHandle_t xTimer)
 {
-  if (xTimer == pressureTimer)
+  if (xTimer == compressionTimer)
   {
-    sendPressureCountdownUpdatedInfo(0);
-    if (xTimerStop(pressureWatchTimer, 0) != pdPASS)
+    sendCompressionCountdownUpdatedInfo(0);
+    if (xTimerStop(compressionWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
     }
-    pressureTimeElapsed = 0;
+    compressionTimeElapsed = 0;
   }
   else if (xTimer == supplyTimer)
   {
-    sendPressureCountdownUpdatedInfo(0);
+    sendCompressionCountdownUpdatedInfo(0);
     if (xTimerStop(supplyWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -202,7 +202,7 @@ void stopTimer(TimerHandle_t xTimer)
   }
   else if (xTimer == motorTimer)
   {
-    sendPressureCountdownUpdatedInfo(0);
+    sendCompressionCountdownUpdatedInfo(0);
     if (xTimerStop(motorWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -217,18 +217,18 @@ void stopTimer(TimerHandle_t xTimer)
 
 void handleRestartTimer(TimerHandle_t xTimer)
 {
-  if (xTimer == pressureTimer)
+  if (xTimer == compressionTimer)
   {
-    sendPressureCountdownUpdatedInfo(currentSettings.pressureTimeout);
-    if (xTimerReset(pressureWatchTimer, 0) != pdPASS)
+    sendCompressionCountdownUpdatedInfo(currentSettings.compressionTimeout);
+    if (xTimerReset(compressionWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
     }
-    pressureTimeElapsed = 0;
+    compressionTimeElapsed = 0;
   }
   else if (xTimer == supplyTimer)
   {
-    sendPressureCountdownUpdatedInfo(currentSettings.supplyTimeout);
+    sendCompressionCountdownUpdatedInfo(currentSettings.supplyTimeout);
     if (xTimerReset(supplyWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -237,7 +237,7 @@ void handleRestartTimer(TimerHandle_t xTimer)
   }
   else if (xTimer == motorTimer)
   {
-    sendPressureCountdownUpdatedInfo(currentSettings.motorTimeout);
+    sendCompressionCountdownUpdatedInfo(currentSettings.motorTimeout);
     if (xTimerReset(motorWatchTimer, 0) != pdPASS)
     {
       printf("Failed to reset watch timer \n");
@@ -248,7 +248,7 @@ void handleRestartTimer(TimerHandle_t xTimer)
   {
     printf("Failed to restart watch timer \n");
   }
-  pressureTimeElapsed = 0;
+  compressionTimeElapsed = 0;
 }
 
 void longPressCallback(TimerHandle_t xTimer)
@@ -316,14 +316,14 @@ void initControl()
   gpio_set_dir(SOLENOID_GPIO, GPIO_OUT);
   gpio_put(SOLENOID_GPIO, 0);
 
-  const TickType_t pressureTimerPeriod = pdMS_TO_TICKS(currentSettings.pressureTimeout * 1000 * 60); // 1000 ms timer period
-  pressureTimer = xTimerCreate("pressureTimer",                                                      // Just a text name, not used by the kernel.
-                               pressureTimerPeriod,
-                               pdFALSE,             // The timer will auto-reload itself when it expires.
-                               (void *)0,           // Assign each timer a unique id equal to its array index.
-                               handleTimerReached); // Pointer to the timer callback function
+  const TickType_t compressionTimerPeriod = pdMS_TO_TICKS(currentSettings.compressionTimeout * 1000 * 60); // 1000 ms timer period
+  compressionTimer = xTimerCreate("compressionTimer",                                                      // Just a text name, not used by the kernel.
+                                  compressionTimerPeriod,
+                                  pdFALSE,             // The timer will auto-reload itself when it expires.
+                                  (void *)0,           // Assign each timer a unique id equal to its array index.
+                                  handleTimerReached); // Pointer to the timer callback function
 
-  if (pressureTimer == NULL)
+  if (compressionTimer == NULL)
   {
     // The timer was not created.
     printf("Failed to create shutdown timer \n");
@@ -355,12 +355,12 @@ void initControl()
     printf("Failed to create shutdown timer \n");
   }
 
-  pressureWatchTimer = xTimerCreate("pressureWatchTimer",
-                                    pdMS_TO_TICKS(60000),
-                                    pdTRUE,
-                                    (void *)0,
-                                    handleWatchTimerChange);
-  if (pressureWatchTimer == NULL)
+  compressionWatchTimer = xTimerCreate("compressionWatchTimer",
+                                       pdMS_TO_TICKS(60000),
+                                       pdTRUE,
+                                       (void *)0,
+                                       handleWatchTimerChange);
+  if (compressionWatchTimer == NULL)
   {
     printf("Failed to create the timer.\n");
   }
@@ -496,12 +496,12 @@ void sendMotorStopInfo()
   }
 }
 
-void sendPressureCountdownUpdatedInfo(int timeout)
+void sendCompressionCountdownUpdatedInfo(int timeout)
 {
 
   Message msg;
   msg.messageType = MessageType::INFO;
-  msg.infoType = PRESSURE_COUNTDOWN_UPDATED;
+  msg.infoType = COMPRESSION_COUNTDOWN_UPDATED;
   msg.timeout = timeout;
 
   if (xQueueSend(outgoingMessageQueue, &msg, pdMS_TO_TICKS(100)) != pdPASS)
@@ -538,11 +538,11 @@ void sendMotorCountdownUpdatedInfo(int timeout)
   }
 }
 
-void sendPressureCountdownEndInfo()
+void sendCompressionCountdownEndInfo()
 {
   Message msg;
   msg.messageType = MessageType::INFO;
-  msg.infoType = PRESSURE_COUNTOWN_END;
+  msg.infoType = COMPRESSION_COUNTOWN_END;
 
   if (xQueueSend(outgoingMessageQueue, &msg, pdMS_TO_TICKS(100)) != pdPASS)
   {
@@ -633,9 +633,9 @@ bool bufferToMessage(const char *buffer, Message &msg)
         {
           msg.commandType = CommandType::OFF_RELEASE;
         }
-        else if (strcmp(commandType->valuestring, "SET_PRESSURE_TIMEOUT") == 0)
+        else if (strcmp(commandType->valuestring, "SET_COMPRESSION_TIMEOUT") == 0)
         {
-          msg.commandType = CommandType::SET_PRESSURE_TIMEOUT;
+          msg.commandType = CommandType::SET_COMPRESSION_TIMEOUT;
 
           // Parse timeout
           cJSON *timeout = cJSON_GetObjectItem(json, "timeout");
@@ -687,9 +687,9 @@ bool bufferToMessage(const char *buffer, Message &msg)
             msg.pressure = static_cast<float>(pressure->valuedouble);
           }
         }
-        else if (strcmp(infoType->valuestring, "PRESSURE_COUNTDOWN_UPDATED") == 0)
+        else if (strcmp(infoType->valuestring, "COMPRESSION_COUNTDOWN_UPDATED") == 0)
         {
-          msg.infoType = InfoType::PRESSURE_COUNTDOWN_UPDATED;
+          msg.infoType = InfoType::COMPRESSION_COUNTDOWN_UPDATED;
 
           // Parse timeout
           cJSON *timeout = cJSON_GetObjectItem(json, "timeout");
@@ -750,8 +750,8 @@ std::string messageToString(const Message &msg)
     case CommandType::OFF_RELEASE:
       cJSON_AddStringToObject(json, "commandType", "OFF_RELEASE");
       break;
-    case CommandType::SET_PRESSURE_TIMEOUT:
-      cJSON_AddStringToObject(json, "commandType", "SET_PRESSURE_TIMEOUT");
+    case CommandType::SET_COMPRESSION_TIMEOUT:
+      cJSON_AddStringToObject(json, "commandType", "SET_COMPRESSION_TIMEOUT");
       cJSON_AddNumberToObject(json, "timeout", msg.timeout);
       break;
     case CommandType::SET_RELEASE_TIMEOUT:
@@ -777,8 +777,8 @@ std::string messageToString(const Message &msg)
       cJSON_AddStringToObject(json, "infoType", "PRESSURE_CHANGE");
       cJSON_AddNumberToObject(json, "pressure", msg.pressure);
       break;
-    case InfoType::PRESSURE_COUNTDOWN_UPDATED:
-      cJSON_AddStringToObject(json, "infoType", "PRESSURE_COUNTDOWN_UPDATED");
+    case InfoType::COMPRESSION_COUNTDOWN_UPDATED:
+      cJSON_AddStringToObject(json, "infoType", "COMPRESSION_COUNTDOWN_UPDATED");
       cJSON_AddNumberToObject(json, "timeout", msg.timeout);
       break;
     case InfoType::RELEASE_COUNTDOWN_UPDATE:
@@ -808,7 +808,7 @@ void handleOn()
   gpio_put(RELAY_GPIO, 1);
   sendTurnedOnInfo();
   gpio_put(SOLENOID_GPIO, 0);
-  startTimer(pressureTimer); // TODO: change to read pressure
+  startTimer(compressionTimer); // TODO: change to read pressure
 }
 
 void handleOff()
@@ -816,7 +816,7 @@ void handleOff()
   gpio_put(RELAY_GPIO, 0);
   sendTurnedOffInfo();
   gpio_put(SOLENOID_GPIO, 0);
-  stopTimer(pressureTimer); // TODO: change to read pressure
+  stopTimer(compressionTimer); // TODO: change to read pressure
 }
 
 void handleSupplyAndOff()
@@ -829,14 +829,14 @@ void handleSupplyAndOff()
   vTaskDelay(pdMS_TO_TICKS(20000));
   gpio_put(SOLENOID_GPIO, 0);
   sendSupplydInfo();
-  stopTimer(pressureTimer); // TODO: change to read pressure
+  stopTimer(compressionTimer); // TODO: change to read pressure
 }
 
-void handleSetPressureTimeout(int timeout)
+void handleSetCompressionTimeout(int timeout)
 {
-  currentSettings.pressureTimeout = timeout;
+  currentSettings.compressionTimeout = timeout;
   requestSettingsValidation();
-  changeTimerPreiod(pressureTimer, timeout);
+  changeTimerPreiod(compressionTimer, timeout);
 }
 
 void handleSetSupplyTimeout(int timeout)
@@ -896,17 +896,17 @@ void controlTask(void *params)
         printf("Received OFF_RELEASE command.\n");
         handleSupplyAndOff();
         break;
-      case CommandType::SET_PRESSURE_TIMEOUT:
+      case CommandType::SET_COMPRESSION_TIMEOUT:
         printf("Set pressure timeout to %d minutes.\n", command.timeout);
-        handleSetPressureTimeout(command.timeout);
+        handleSetCompressionTimeout(command.timeout);
         break;
       case CommandType::SET_RELEASE_TIMEOUT:
         printf("Set supply timeout to %d minutes.\n", command.timeout);
-        handleSetPressureTimeout(command.timeout);
+        handleSetCompressionTimeout(command.timeout);
         break;
       case CommandType::SET_MOTOR_TIMEOUT:
         printf("Set motor timeout to %d minutes.\n", command.timeout);
-        handleSetPressureTimeout(command.timeout);
+        handleSetCompressionTimeout(command.timeout);
         break;
       default:
         printf("Unknown command received.\n");

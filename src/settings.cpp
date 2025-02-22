@@ -11,7 +11,7 @@ volatile Settings currentSettings = {
     .ssid = "",
     .password = "",
     .authMode = 0,
-    .pressureTimeout = 60,
+    .compressionTimeout = 60,
     .supplyTimeout = 5,
     .motorTimeout = 2,
     .magic = SETTINGS_MAGIC,
@@ -117,9 +117,9 @@ void resetSettings()
       .ssid = "",
       .password = "",
       .authMode = 0,
-      .pressureTimeout = currentSettings.pressureTimeout, // DO NOT RESET
-      .supplyTimeout = currentSettings.supplyTimeout,     // DO NOT RESET
-      .motorTimeout = currentSettings.motorTimeout,       // DO NOT RESET
+      .compressionTimeout = currentSettings.compressionTimeout, // DO NOT RESET
+      .supplyTimeout = currentSettings.supplyTimeout,           // DO NOT RESET
+      .motorTimeout = currentSettings.motorTimeout,             // DO NOT RESET
       .magic = SETTINGS_MAGIC,
   };
 
